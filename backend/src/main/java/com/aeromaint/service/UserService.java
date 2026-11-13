@@ -3,16 +3,15 @@ package com.aeromaint.service;
 import com.aeromaint.dto.*;
 import com.aeromaint.entity.Role;
 import com.aeromaint.entity.User;
+import com.aeromaint.exception.BusinessRuleException;
+import com.aeromaint.exception.NotFoundException;
 import com.aeromaint.repository.UserRepository;
 import com.aeromaint.security.JwtService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -36,14 +35,11 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        try {
-            // Spring Security loads the user, compares the BCrypt hash and checks the account is active.
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.username(), request.password()));
-        } catch (AuthenticationException e) {
-            // Same message for "unknown user" and "wrong password": do not reveal which usernames exist.
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
-        }
+        // Spring Security loads the user, compares the BCrypt hash and checks the account is active.
+        // On failure it throws an AuthenticationException, which GlobalExceptionHandler turns into 401
+        // with the same message for "unknown user" and "wrong password" (do not reveal which usernames exist).
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
         User user = findUser(request.username());
         String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
@@ -66,10 +62,10 @@ public class UserService {
     @Transactional
     public UserResponse create(CreateUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new BusinessRuleException("Username already exists");
         }
         if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new BusinessRuleException("Email already exists");
         }
 
         User user = new User();
@@ -86,7 +82,7 @@ public class UserService {
         User user = findUser(id);
 
         if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new BusinessRuleException("Email already exists");
         }
 
         user.setFullName(request.fullName());
@@ -101,11 +97,11 @@ public class UserService {
 
     private User findUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
