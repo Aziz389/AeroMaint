@@ -24,3 +24,11 @@ spring:
 
 server:
   port: 8080
+
+# Our own settings (read by JwtService and DemoPasswordInitializer)
+aeromaint:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+  # Password given to the seeded demo users on first start. Empty = demo users stay locked.
+  demo-password: ${DEMO_PASSWORD:}
