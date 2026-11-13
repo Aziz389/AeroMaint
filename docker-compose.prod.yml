@@ -1,0 +1,21 @@
+# Production overrides, used on the server together with docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Differences with local Docker:
+# - images are pulled from GitHub Container Registry instead of being built on the server;
+# - IMAGE_TAG pins the exact commit that CI built (rollback = deploy an older tag);
+# - the backend is not published at all (only Nginx talks to it);
+# - the frontend listens on the standard HTTP port 80.
+
+services:
+  backend:
+    image: ${IMAGE_PREFIX:?IMAGE_PREFIX is required, e.g. ghcr.io/aziz389}/aeromaint-backend:${IMAGE_TAG:-latest}
+    build: !reset null
+    ports: !reset []
+
+  frontend:
+    image: ${IMAGE_PREFIX}/aeromaint-frontend:${IMAGE_TAG:-latest}
+    build: !reset null
+    ports: !override
+      - "80:80"
