@@ -8,6 +8,10 @@ so keep code simple and readable, and explain each phase briefly when it is fini
 A web app where airport staff report equipment faults, supervisors assign them, technicians fix them,
 and managers see statistics. It also manages preventive maintenance schedules.
 
+Demo context: Sfax-Thyna International Airport (SFA / DTTX, Tunisia), a small regional airport with one
+terminal and a single runway 15/33 (operated by OACA). Seed data is fictional but must fit this airport
+(no jet bridges or second terminal); staff names and emails stay invented.
+
 ## Stack
 - Backend: Java 17, Spring Boot 3, Spring Security with JWT, Spring Data JPA, MySQL, Flyway migrations, OpenAPI/Swagger
 - Frontend: Angular (latest stable), Angular Material, Chart.js
