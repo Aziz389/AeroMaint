@@ -1,24 +1,58 @@
-# Compiled class file
+# ===== Java / Maven =====
+target/
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
-*.nar
 *.ear
+*.nar
+*.log
+hs_err_pid*
+replay_pid*
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== Archives =====
 *.zip
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# ===== Node / Angular =====
+node_modules/
+dist/
+.angular/
+out-tsc/
+npm-debug.log*
+yarn-error.log*
+coverage/
+
+# ===== IDE / OS =====
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+.settings/
+.project
+.classpath
+.factorypath
+*.ctxt
+.mtj.tmp/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ===== Environment / secrets =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ===== Build output =====
+build/
+bin/
+
+# ===== Docker volumes / local data =====
+docker/data/
+docker/volumes/
+mysql-data/
+grafana-data/
+prometheus-data/
