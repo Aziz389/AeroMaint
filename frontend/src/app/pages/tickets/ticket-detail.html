@@ -1,0 +1,117 @@
+<div class="page">
+  <a mat-button routerLink="/tickets">
+    <mat-icon>arrow_back</mat-icon>
+    Back to tickets
+  </a>
+
+  @if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  }
+
+  @if (ticket(); as t) {
+    <div class="page-header">
+      <h1>#{{ t.id }} · {{ t.title }}</h1>
+      <div class="actions">
+        @if (nextStep(); as step) {
+          <button mat-flat-button (click)="advance()">
+            <mat-icon>{{ step.icon }}</mat-icon>
+            {{ step.label }}
+          </button>
+        }
+        @if (isSupervisor() && t.status !== 'CLOSED') {
+          <a mat-stroked-button [routerLink]="['/tickets', t.id, 'edit']">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </a>
+        }
+        @if (isSupervisor() && t.status === 'OPEN') {
+          <button mat-stroked-button (click)="delete()">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        }
+      </div>
+    </div>
+
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <div class="detail-grid">
+          <div>
+            <div class="label">Status</div>
+            <span class="chip status-{{ t.status }}">{{ t.status }}</span>
+          </div>
+          <div>
+            <div class="label">Priority</div>
+            <span class="chip priority-{{ t.priority }}">{{ t.priority }}</span>
+          </div>
+          <div>
+            <div class="label">Equipment</div>
+            {{ t.equipmentName }}
+            <div class="muted">{{ t.zoneName }}</div>
+          </div>
+          <div>
+            <div class="label">Reported by</div>
+            {{ t.reporter?.fullName ?? 'Maintenance scheduler' }}
+          </div>
+          <div>
+            <div class="label">Assigned to</div>
+            {{ t.assignee?.fullName ?? 'Not assigned' }}
+          </div>
+          <div>
+            <div class="label">Created</div>
+            {{ t.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+          </div>
+          <div>
+            <div class="label">Resolved</div>
+            {{ t.resolvedAt ? (t.resolvedAt | date: 'dd/MM/yyyy HH:mm') : '—' }}
+          </div>
+        </div>
+        <div class="label muted">Description</div>
+        <p>{{ t.description || 'No description.' }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    @if (canAssign()) {
+      <h2>Assign a technician</h2>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Technician</mat-label>
+          <mat-select [formControl]="assigneeControl">
+            @for (tech of technicians(); track tech.id) {
+              <mat-option [value]="tech.id">{{ tech.fullName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-flat-button (click)="assign()" [disabled]="assigneeControl.invalid">
+          <mat-icon>person_add</mat-icon>
+          {{ t.assignee ? 'Re-assign' : 'Assign' }}
+        </button>
+      </div>
+    }
+
+    <h2>Comments ({{ comments().length }})</h2>
+    @for (c of comments(); track c.id) {
+      <mat-card appearance="outlined" class="comment">
+        <mat-card-content>
+          <div class="muted">{{ c.author.fullName }} · {{ c.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+          <p>{{ c.content }}</p>
+        </mat-card-content>
+      </mat-card>
+    } @empty {
+      <p class="muted">No comments yet.</p>
+    }
+
+    @if (canComment()) {
+      <div class="comment-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Add a comment</mat-label>
+          <textarea matInput rows="3" [formControl]="commentControl"></textarea>
+        </mat-form-field>
+        <button mat-flat-button (click)="addComment()" [disabled]="commentControl.invalid">
+          <mat-icon>send</mat-icon>
+          Post comment
+        </button>
+      </div>
+    }
+  }
+</div>

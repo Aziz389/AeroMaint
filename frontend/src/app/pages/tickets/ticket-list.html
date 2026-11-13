@@ -1,0 +1,115 @@
+<div class="page">
+  <div class="page-header">
+    <h1>{{ auth.hasRole('TECHNICIAN') ? 'My tickets' : 'Tickets' }}</h1>
+    @if (auth.hasRole('SUPERVISOR')) {
+      <a mat-flat-button routerLink="/tickets/new">
+        <mat-icon>add</mat-icon>
+        New ticket
+      </a>
+    }
+  </div>
+
+  <form class="filters" [formGroup]="filters">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option [value]="null">All</mat-option>
+        @for (s of statuses; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option [value]="null">All</mat-option>
+        @for (p of priorities; track p) {
+          <mat-option [value]="p">{{ p }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Equipment</mat-label>
+      <mat-select formControlName="equipmentId">
+        <mat-option [value]="null">All</mat-option>
+        @for (e of equipment(); track e.id) {
+          <mat-option [value]="e.id">{{ e.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (!auth.hasRole('TECHNICIAN')) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Assignee</mat-label>
+        <mat-select formControlName="assigneeId">
+          <mat-option [value]="null">All</mat-option>
+          @for (t of technicians(); track t.id) {
+            <mat-option [value]="t.id">{{ t.fullName }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <button mat-button type="button" (click)="clearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Clear
+    </button>
+  </form>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  }
+
+  <div class="table-scroll">
+    <table mat-table [dataSource]="tickets()">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let t">{{ t.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Title</th>
+        <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="equipment">
+        <th mat-header-cell *matHeaderCellDef>Equipment</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.equipmentName }}
+          <div class="muted">{{ t.zoneName }}</div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let t"><span class="chip priority-{{ t.priority }}">{{ t.priority }}</span></td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t"><span class="chip status-{{ t.status }}">{{ t.status }}</span></td>
+      </ng-container>
+
+      <ng-container matColumnDef="assignee">
+        <th mat-header-cell *matHeaderCellDef>Assignee</th>
+        <td mat-cell *matCellDef="let t">{{ t.assignee?.fullName ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created</th>
+        <td mat-cell *matCellDef="let t">{{ t.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns" class="clickable-row" (click)="open(row)"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell muted" [attr.colspan]="columns.length">No tickets match these filters.</td>
+      </tr>
+    </table>
+  </div>
+</div>

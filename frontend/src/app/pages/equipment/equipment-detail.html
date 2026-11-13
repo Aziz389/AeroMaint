@@ -1,0 +1,112 @@
+<div class="page">
+  <a mat-button routerLink="/equipment">
+    <mat-icon>arrow_back</mat-icon>
+    Back to equipment
+  </a>
+
+  @if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  }
+
+  @if (history(); as h) {
+    <div class="page-header">
+      <h1>{{ h.equipment.name }}</h1>
+      @if (auth.hasRole('ADMIN')) {
+        <a mat-stroked-button [routerLink]="['/equipment', h.equipment.id, 'edit']">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </a>
+      }
+    </div>
+
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <div class="detail-grid">
+          <div>
+            <div class="label">Status</div>
+            <span class="chip equip-{{ h.equipment.status }}">{{ h.equipment.status }}</span>
+          </div>
+          <div>
+            <div class="label">Type</div>
+            {{ h.equipment.type }}
+          </div>
+          <div>
+            <div class="label">Zone</div>
+            {{ h.equipment.zoneName }}
+          </div>
+          <div>
+            <div class="label">Installed</div>
+            {{ h.equipment.installedAt | date: 'dd/MM/yyyy' }}
+          </div>
+          <div>
+            <div class="label">Tickets</div>
+            {{ h.tickets.length }} total · {{ openCount() }} not closed
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <h2>Preventive maintenance plans</h2>
+    @if (h.maintenancePlans.length) {
+      <div class="table-scroll">
+        <table mat-table [dataSource]="h.maintenancePlans">
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Task</th>
+            <td mat-cell *matCellDef="let p">{{ p.description }}</td>
+          </ng-container>
+          <ng-container matColumnDef="intervalDays">
+            <th mat-header-cell *matHeaderCellDef>Every</th>
+            <td mat-cell *matCellDef="let p">{{ p.intervalDays }} days</td>
+          </ng-container>
+          <ng-container matColumnDef="nextDue">
+            <th mat-header-cell *matHeaderCellDef>Next due</th>
+            <td mat-cell *matCellDef="let p">{{ p.nextDue | date: 'dd/MM/yyyy' }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="planColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: planColumns"></tr>
+        </table>
+      </div>
+    } @else {
+      <p class="muted">No maintenance plan for this equipment.</p>
+    }
+
+    <h2>Fault and maintenance history</h2>
+    <div class="table-scroll">
+      <table mat-table [dataSource]="h.tickets">
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let t">{{ t.id }}</td>
+        </ng-container>
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+        </ng-container>
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef>Priority</th>
+          <td mat-cell *matCellDef="let t"><span class="chip priority-{{ t.priority }}">{{ t.priority }}</span></td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let t"><span class="chip status-{{ t.status }}">{{ t.status }}</span></td>
+        </ng-container>
+        <ng-container matColumnDef="assignee">
+          <th mat-header-cell *matHeaderCellDef>Technician</th>
+          <td mat-cell *matCellDef="let t">{{ t.assignee?.fullName ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Created</th>
+          <td mat-cell *matCellDef="let t">{{ t.createdAt | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="resolvedAt">
+          <th mat-header-cell *matHeaderCellDef>Resolved</th>
+          <td mat-cell *matCellDef="let t">{{ t.resolvedAt ? (t.resolvedAt | date: 'dd/MM/yyyy') : '—' }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="ticketColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: ticketColumns" class="clickable-row" (click)="openTicket(row)"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell muted" [attr.colspan]="ticketColumns.length">No tickets for this equipment.</td>
+        </tr>
+      </table>
+    </div>
+  }
+</div>

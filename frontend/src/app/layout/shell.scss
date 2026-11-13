@@ -1,0 +1,63 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 8px;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 64px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+
+  a,
+  button {
+    color: inherit;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+  text-decoration: none;
+  font: var(--mat-sys-title-large);
+}
+
+.airport {
+  font: var(--mat-sys-label-medium);
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+nav {
+  display: flex;
+  gap: 4px;
+
+  .active {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--mat-sys-body-medium);
+
+  .chip {
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+@media (max-width: 600px) {
+  .user-name {
+    display: none;
+  }
+}

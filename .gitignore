@@ -56,3 +56,6 @@ docker/volumes/
 mysql-data/
 grafana-data/
 prometheus-data/
+
+# ===== Local tool settings =====
+.claude/
