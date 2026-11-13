@@ -41,6 +41,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/error").permitAll()
                         // API documentation (Swagger UI). The endpoints it calls still need a token.
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Health check and metrics for Prometheus. Nginx only forwards /api/, so in production
+                        // these are reachable from inside the Docker network only, not from the internet.
+                        .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                         .anyRequest().authenticated())
                 // No token or invalid token -> 401 Unauthorized (wrong role -> 403 Forbidden, the default).
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

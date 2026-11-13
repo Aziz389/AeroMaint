@@ -1,0 +1,20 @@
+# Alert rules, checked by Prometheus every evaluation_interval (15 s).
+# Firing alerts are visible at http://localhost:9090/alerts and on the Grafana dashboard.
+groups:
+  - name: aeromaint
+    rules:
+      - alert: HighErrorRate
+        # Share of API requests that ended with a 5xx server error over the last 5 minutes.
+        # 4xx (bad input, 401, 403) are client mistakes, not server failures, so they are not counted.
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{application="aeromaint", uri!~"/actuator.*", status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{application="aeromaint", uri!~"/actuator.*"}[5m]))
+          ) > 0.05
+        for: 2m            # must stay above 5% for 2 minutes, so one short spike does not alert
+        labels:
+          severity: critical
+        annotations:
+          summary: "AeroMaint API error rate above 5%"
+          description: "{{ $value | humanizePercentage }} of API requests returned a 5xx error over the last 5 minutes."

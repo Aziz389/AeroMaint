@@ -25,6 +25,20 @@ spring:
 server:
   port: 8080
 
+# Monitoring (Spring Boot Actuator + Micrometer)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus   # only these three; nothing else is exposed
+  metrics:
+    tags:
+      application: aeromaint                # added to every metric, used to filter in Grafana
+    distribution:
+      # Records request durations in buckets so Prometheus can compute p95 / p99 latency.
+      percentiles-histogram:
+        http.server.requests: true
+
 # Our own settings (read by JwtService and DemoPasswordInitializer)
 aeromaint:
   jwt:

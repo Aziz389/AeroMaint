@@ -33,6 +33,7 @@ services:
     build: ./backend
     image: aeromaint-backend:latest
     restart: unless-stopped
+    mem_limit: 1g     # the JVM uses up to 75% of this for its heap (-XX:MaxRAMPercentage=75 in the Dockerfile)
     depends_on:
       mysql:
         condition: service_healthy   # wait until MySQL accepts connections, not just "container started"
@@ -59,5 +60,41 @@ services:
     ports:
       - "8088:80"     # open http://localhost:8088 (port 80 is often taken by XAMPP's Apache)
 
+  # ---------- Monitoring ----------
+
+  prometheus:
+    image: prom/prometheus:v3.16.0
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d    # keep 15 days of metrics
+    ports:
+      - "9090:9090"   # Prometheus UI: graphs and http://localhost:9090/alerts
+
+  grafana:
+    image: grafana/grafana:13.3.1
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/aeromaint.json
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"   # Grafana: http://localhost:3000 (user admin, password from .env)
+
 volumes:
   mysql-data:
+  prometheus-data:
+  grafana-data:

@@ -78,6 +78,17 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Actuator: health and metrics endpoints (/actuator/health, /actuator/prometheus) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Micrometer registry that formats the metrics for Prometheus -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- OpenAPI docs + Swagger UI at /swagger-ui.html -->
         <dependency>
             <groupId>org.springdoc</groupId>

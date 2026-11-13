@@ -1,0 +1,13 @@
+# Prometheus: every 15 seconds, read the backend's metrics and store them as time series.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s     # how often alert rules are checked
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+scrape_configs:
+  - job_name: aeromaint-backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8080"]   # Docker service name, resolved on the internal network

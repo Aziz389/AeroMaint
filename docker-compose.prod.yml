@@ -5,8 +5,8 @@
 # Differences with local Docker:
 # - images are pulled from GitHub Container Registry instead of being built on the server;
 # - IMAGE_TAG pins the exact commit that CI built (rollback = deploy an older tag);
-# - the backend is not published at all (only Nginx talks to it);
-# - the frontend listens on the standard HTTP port 80.
+# - the backend and Prometheus are not published at all (only reachable inside the Docker network);
+# - the frontend listens on the standard HTTP port 80; Grafana stays on 3000 behind its login.
 
 services:
   backend:
@@ -19,3 +19,7 @@ services:
     build: !reset null
     ports: !override
       - "80:80"
+
+  # Prometheus has no login: keep it inside the Docker network on the server.
+  prometheus:
+    ports: !reset []

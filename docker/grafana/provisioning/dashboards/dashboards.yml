@@ -1,0 +1,11 @@
+# Grafana loads every dashboard JSON file found in /var/lib/grafana/dashboards at startup.
+apiVersion: 1
+
+providers:
+  - name: AeroMaint
+    folder: AeroMaint
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
