@@ -27,15 +27,18 @@ public class TicketService {
     private final TicketCommentRepository commentRepository;
     private final UserRepository userRepository;
     private final EquipmentService equipmentService;
+    private final AuditService auditService;
 
     public TicketService(TicketRepository ticketRepository,
                          TicketCommentRepository commentRepository,
                          UserRepository userRepository,
-                         EquipmentService equipmentService) {
+                         EquipmentService equipmentService,
+                         AuditService auditService) {
         this.ticketRepository = ticketRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.equipmentService = equipmentService;
+        this.auditService = auditService;
     }
 
     // ---------- Read ----------
@@ -68,7 +71,9 @@ public class TicketService {
         ticket.setPriority(request.priority());
         ticket.setReporter(currentUser(username));
         ticket.setStatus(TicketStatus.OPEN);
-        return TicketResponse.from(ticketRepository.save(ticket));
+        ticketRepository.save(ticket);
+        auditService.log("TICKET_CREATED", "TICKET", ticket.getId(), ticket.getTitle());
+        return TicketResponse.from(ticket);
     }
 
     @Transactional
@@ -81,6 +86,7 @@ public class TicketService {
         ticket.setTitle(request.title());
         ticket.setDescription(request.description());
         ticket.setPriority(request.priority());
+        auditService.log("TICKET_UPDATED", "TICKET", id, ticket.getTitle());
         return TicketResponse.from(ticket);
     }
 
@@ -92,6 +98,7 @@ public class TicketService {
             throw new BusinessRuleException("Only OPEN tickets can be deleted");
         }
         ticketRepository.delete(ticket);
+        auditService.log("TICKET_DELETED", "TICKET", id, ticket.getTitle());
     }
 
     // ---------- Workflow ----------
@@ -110,6 +117,7 @@ public class TicketService {
         }
         ticket.setAssignee(technician);
         ticket.setStatus(TicketStatus.ASSIGNED);
+        auditService.log("TICKET_ASSIGNED", "TICKET", id, "Assigned to " + technician.getUsername());
         return TicketResponse.from(ticket);
     }
 
@@ -135,10 +143,12 @@ public class TicketService {
             throw new AccessDeniedException("Only a supervisor can close a ticket");
         }
 
+        TicketStatus oldStatus = ticket.getStatus();
         ticket.setStatus(newStatus);
         if (newStatus == TicketStatus.RESOLVED) {
             ticket.setResolvedAt(LocalDateTime.now());
         }
+        auditService.log(current, "TICKET_STATUS_CHANGED", "TICKET", id, oldStatus + " -> " + newStatus);
         return TicketResponse.from(ticket);
     }
 

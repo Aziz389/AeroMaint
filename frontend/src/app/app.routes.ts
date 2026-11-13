@@ -16,6 +16,25 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'tickets' },
 
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
+        canActivate: [roleGuard],
+        data: { roles: ['SUPERVISOR', 'ADMIN'] },
+      },
+      {
+        path: 'maintenance',
+        loadComponent: () => import('./pages/maintenance/maintenance-plans').then((m) => m.MaintenancePlans),
+        canActivate: [roleGuard],
+        data: { roles: ['SUPERVISOR', 'ADMIN'] },
+      },
+      {
+        path: 'audit-log',
+        loadComponent: () => import('./pages/audit/audit-log').then((m) => m.AuditLog),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+      },
+
       { path: 'tickets', loadComponent: () => import('./pages/tickets/ticket-list').then((m) => m.TicketList) },
       {
         path: 'tickets/new',

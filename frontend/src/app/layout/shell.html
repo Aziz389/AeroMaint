@@ -6,6 +6,12 @@
   </a>
 
   <nav>
+    @if (auth.hasRole('SUPERVISOR', 'ADMIN')) {
+      <a mat-button routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon>bar_chart</mat-icon>
+        Dashboard
+      </a>
+    }
     <a mat-button routerLink="/tickets" routerLinkActive="active">
       <mat-icon>confirmation_number</mat-icon>
       {{ auth.hasRole('TECHNICIAN') ? 'My tickets' : 'Tickets' }}
@@ -14,6 +20,18 @@
       <mat-icon>precision_manufacturing</mat-icon>
       Equipment
     </a>
+    @if (auth.hasRole('SUPERVISOR', 'ADMIN')) {
+      <a mat-button routerLink="/maintenance" routerLinkActive="active">
+        <mat-icon>event_repeat</mat-icon>
+        Maintenance
+      </a>
+    }
+    @if (auth.hasRole('ADMIN')) {
+      <a mat-button routerLink="/audit-log" routerLinkActive="active">
+        <mat-icon>history</mat-icon>
+        Audit log
+      </a>
+    }
   </nav>
 
   <span class="spacer"></span>

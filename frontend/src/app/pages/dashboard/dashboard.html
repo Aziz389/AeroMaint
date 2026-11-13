@@ -1,0 +1,61 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+  </div>
+
+  @if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  }
+
+  @if (data(); as d) {
+    <div class="tiles">
+      <mat-card appearance="outlined" class="tile">
+        <mat-icon>confirmation_number</mat-icon>
+        <div class="value">{{ d.openTickets }}</div>
+        <div class="label">Open tickets</div>
+        <div class="hint">Open, assigned or in progress</div>
+      </mat-card>
+      <mat-card appearance="outlined" class="tile">
+        <mat-icon>timer</mat-icon>
+        <div class="value">{{ d.averageResolutionHours === null ? '—' : d.averageResolutionHours + ' h' }}</div>
+        <div class="label">Average resolution time</div>
+        <div class="hint">From report to resolved</div>
+      </mat-card>
+    </div>
+
+    <div class="charts">
+      <mat-card appearance="outlined">
+        <mat-card-header><mat-card-title>Tickets by status</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="chart-box">
+            <canvas #statusChart role="img" aria-label="Number of tickets in each status"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Most failure-prone equipment</mat-card-title>
+          <mat-card-subtitle>Fault tickets, top 5 (preventive maintenance excluded)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-box">
+            <canvas #equipmentChart role="img" aria-label="Fault tickets per equipment, top 5"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Workload per technician</mat-card-title>
+          <mat-card-subtitle>Tickets currently assigned or in progress</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-box">
+            <canvas #workloadChart role="img" aria-label="Active tickets per technician"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

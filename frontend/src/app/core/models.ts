@@ -101,6 +101,31 @@ export interface MaintenancePlan {
   description: string;
 }
 
+export interface MaintenancePlanRequest {
+  equipmentId: number;
+  intervalDays: number;
+  nextDue: string;
+  description: string;
+}
+
+export interface Dashboard {
+  openTickets: number;
+  averageResolutionHours: number | null;
+  ticketsByStatus: { status: TicketStatus; count: number }[];
+  mostFailingEquipment: { equipmentId: number; equipmentName: string; faultCount: number }[];
+  technicianWorkload: { technicianId: number; fullName: string; activeTickets: number }[];
+}
+
+export interface AuditLogEntry {
+  id: number;
+  user: UserSummary | null;
+  action: string;
+  entityType: string;
+  entityId: number | null;
+  details: string | null;
+  createdAt: string;
+}
+
 export interface EquipmentHistory {
   equipment: Equipment;
   tickets: Ticket[];

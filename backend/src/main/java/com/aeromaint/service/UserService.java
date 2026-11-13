@@ -23,17 +23,21 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final AuditService auditService;
 
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       AuditService auditService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.auditService = auditService;
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         // Spring Security loads the user, compares the BCrypt hash and checks the account is active.
         // On failure it throws an AuthenticationException, which GlobalExceptionHandler turns into 401
@@ -43,6 +47,7 @@ public class UserService {
 
         User user = findUser(request.username());
         String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+        auditService.log(user, "LOGIN", "USER", user.getId(), null);
         return new LoginResponse(token, jwtService.getExpirationMs(), UserResponse.from(user));
     }
 
@@ -74,7 +79,9 @@ public class UserService {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(request.role());
-        return UserResponse.from(userRepository.save(user));
+        userRepository.save(user);
+        auditService.log("USER_CREATED", "USER", user.getId(), user.getUsername() + " as " + user.getRole());
+        return UserResponse.from(user);
     }
 
     @Transactional
@@ -92,6 +99,8 @@ public class UserService {
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
+        auditService.log("USER_UPDATED", "USER", user.getId(),
+                user.getUsername() + ": role=" + user.getRole() + ", active=" + user.isActive());
         return UserResponse.from(user); // saved automatically at the end of the transaction
     }
 

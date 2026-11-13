@@ -32,3 +32,7 @@ aeromaint:
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
   # Password given to the seeded demo users on first start. Empty = demo users stay locked.
   demo-password: ${DEMO_PASSWORD:}
+  # Preventive maintenance job: first run 15 s after startup, then every hour.
+  scheduler:
+    initial-delay-ms: ${SCHEDULER_INITIAL_DELAY_MS:15000}
+    interval-ms: ${SCHEDULER_INTERVAL_MS:3600000}

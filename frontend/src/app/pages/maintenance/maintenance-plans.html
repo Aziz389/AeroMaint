@@ -1,0 +1,117 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Preventive maintenance</h1>
+    @if (canManage() && editingId() === null) {
+      <button mat-flat-button (click)="startAdd()">
+        <mat-icon>add</mat-icon>
+        New plan
+      </button>
+    }
+  </div>
+  <p class="muted">
+    Every hour the system checks these plans. When a plan is due, it creates a maintenance ticket
+    and moves the next due date forward by the interval.
+  </p>
+
+  @if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  }
+
+  @if (editingId() !== null) {
+    <mat-card appearance="outlined" class="form-card plan-form">
+      <mat-card-header>
+        <mat-card-title>{{ editingId() ? 'Edit plan' : 'New plan' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <mat-form-field appearance="outline">
+            <mat-label>Equipment</mat-label>
+            <mat-select formControlName="equipmentId">
+              @for (e of equipment(); track e.id) {
+                <mat-option [value]="e.id">{{ e.name }} · {{ e.zoneName }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.equipmentId.hasError('required')) {
+              <mat-error>Choose the equipment</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Task description</mat-label>
+            <input matInput formControlName="description" maxlength="255" />
+            @if (form.controls.description.hasError('required')) {
+              <mat-error>Description is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Repeat every (days)</mat-label>
+            <input matInput type="number" min="1" max="3650" formControlName="intervalDays" />
+            @if (form.controls.intervalDays.invalid) {
+              <mat-error>Between 1 and 3650 days</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Next due date</mat-label>
+            <input matInput type="date" formControlName="nextDue" />
+            @if (form.controls.nextDue.hasError('required')) {
+              <mat-error>Next due date is required</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="actions">
+            <button mat-flat-button type="submit">
+              <mat-icon>save</mat-icon>
+              Save
+            </button>
+            <button mat-button type="button" (click)="cancel()">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <div class="table-scroll">
+    <table mat-table [dataSource]="plans()">
+      <ng-container matColumnDef="equipment">
+        <th mat-header-cell *matHeaderCellDef>Equipment</th>
+        <td mat-cell *matCellDef="let p">{{ p.equipmentName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Task</th>
+        <td mat-cell *matCellDef="let p">{{ p.description }}</td>
+      </ng-container>
+      <ng-container matColumnDef="interval">
+        <th mat-header-cell *matHeaderCellDef>Every</th>
+        <td mat-cell *matCellDef="let p">{{ p.intervalDays }} days</td>
+      </ng-container>
+      <ng-container matColumnDef="nextDue">
+        <th mat-header-cell *matHeaderCellDef>Next due</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.nextDue | date: 'dd/MM/yyyy' }}
+          @if (isDue(p)) {
+            <span class="chip priority-HIGH">Due</span>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let p">
+          <button mat-icon-button (click)="startEdit(p)" aria-label="Edit plan" title="Edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="delete(p)" aria-label="Delete plan" title="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns()"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell muted" [attr.colspan]="columns().length">No maintenance plans yet.</td>
+      </tr>
+    </table>
+  </div>
+</div>

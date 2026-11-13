@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
 import { errorMessage } from '../../core/api-error';
+import { todayIso } from '../../core/dates';
 import { EquipmentService } from '../../core/equipment.service';
 import { EQUIPMENT_STATUSES, EquipmentRequest, EquipmentStatus, Zone } from '../../core/models';
 import { ZoneService } from '../../core/zone.service';
@@ -35,7 +36,7 @@ export class EquipmentForm implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   /** Today as yyyy-MM-dd, the max value of the installation date picker (backend rule: @PastOrPresent). */
-  readonly today = new Date().toISOString().slice(0, 10);
+  readonly today = todayIso();
 
   readonly form = inject(FormBuilder).group({
     name: ['', [Validators.required, Validators.maxLength(100)]],

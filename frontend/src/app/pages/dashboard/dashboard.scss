@@ -1,0 +1,45 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tile {
+  padding: 16px;
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  .value {
+    font: var(--mat-sys-display-small);
+    margin-top: 8px;
+  }
+
+  .label {
+    font: var(--mat-sys-title-small);
+  }
+
+  .hint {
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 16px;
+
+  // Without this, a canvas can force its grid column wider than the screen.
+  > * {
+    min-width: 0;
+  }
+}
+
+.chart-box {
+  position: relative;
+  height: 240px;
+  margin-top: 8px;
+}

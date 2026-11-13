@@ -17,10 +17,13 @@ public class ZoneService {
 
     private final ZoneRepository zoneRepository;
     private final EquipmentRepository equipmentRepository;
+    private final AuditService auditService;
 
-    public ZoneService(ZoneRepository zoneRepository, EquipmentRepository equipmentRepository) {
+    public ZoneService(ZoneRepository zoneRepository, EquipmentRepository equipmentRepository,
+                       AuditService auditService) {
         this.zoneRepository = zoneRepository;
         this.equipmentRepository = equipmentRepository;
+        this.auditService = auditService;
     }
 
     public List<ZoneResponse> list() {
@@ -39,7 +42,9 @@ public class ZoneService {
         Zone zone = new Zone();
         zone.setName(request.name());
         zone.setDescription(request.description());
-        return ZoneResponse.from(zoneRepository.save(zone));
+        zoneRepository.save(zone);
+        auditService.log("ZONE_CREATED", "ZONE", zone.getId(), zone.getName());
+        return ZoneResponse.from(zone);
     }
 
     @Transactional
@@ -50,6 +55,7 @@ public class ZoneService {
         }
         zone.setName(request.name());
         zone.setDescription(request.description());
+        auditService.log("ZONE_UPDATED", "ZONE", zone.getId(), zone.getName());
         return ZoneResponse.from(zone);
     }
 
@@ -60,6 +66,7 @@ public class ZoneService {
             throw new BusinessRuleException("Cannot delete a zone that still contains equipment");
         }
         zoneRepository.delete(zone);
+        auditService.log("ZONE_DELETED", "ZONE", id, zone.getName());
     }
 
     Zone findZone(Long id) {
