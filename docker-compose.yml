@@ -1,0 +1,63 @@
+# AeroMaint full stack: MySQL + Spring Boot backend + Angular/Nginx frontend.
+#
+#   docker compose up -d --build     build images and start everything
+#   docker compose logs -f backend   follow the backend log
+#   docker compose down              stop (data is kept in the mysql-data volume)
+#   docker compose down -v           stop AND delete the database
+#
+# Secrets come from the .env file next to this file (never committed; see .env.example).
+# ${VAR:?message} makes Compose stop with an error if the variable is missing.
+
+name: aeromaint
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: aeromaint
+      MYSQL_USER: ${DB_USERNAME:?DB_USERNAME is required}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      TZ: ${TZ:-Africa/Tunis}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # No "ports": the database is only reachable by the other containers, not from outside.
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    image: aeromaint-backend:latest
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy   # wait until MySQL accepts connections, not just "container started"
+    environment:
+      # "mysql" is the service name above: Docker's internal DNS resolves it to the MySQL container.
+      DB_URL: jdbc:mysql://mysql:3306/aeromaint
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      # Containers run in UTC by default; the airport works in Tunisian time.
+      # This matters for "today" in the maintenance scheduler and for ticket timestamps.
+      TZ: ${TZ:-Africa/Tunis}
+    ports:
+      - "8080:8080"   # exposed only for Swagger UI; the frontend reaches the backend through Nginx
+
+  frontend:
+    build: ./frontend
+    image: aeromaint-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8088:80"     # open http://localhost:8088 (port 80 is often taken by XAMPP's Apache)
+
+volumes:
+  mysql-data:

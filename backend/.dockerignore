@@ -1,0 +1,8 @@
+# Files Docker does not need to send to the build (faster builds, no secrets in images)
+target/
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+*.log
